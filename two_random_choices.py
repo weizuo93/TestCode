@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ''''''
-num_tablet = 10000 #需要创建的tablet的个数
-num_bin = 30       #磁盘个数
+num_tablet = 30000 #需要创建的tablet的个数
+num_bin = 10       #磁盘个数
 
 #bins_original = [0] * num_bin                        # 0初始化tablet在各个磁盘上的分布
 bins_original = random.sample(range(1000), num_bin-5) #初始化tablet在各个磁盘上的分布
@@ -78,8 +78,8 @@ if __name__ == '__main__':
     line_two_choices = plt.plot(range(num_tablet), diff_two_choices, 'b', label='two random choices') #图表中第2条折线的label配置
     plt.plot(range(num_tablet), diff_choice, 'r', range(num_tablet), diff_two_choices, 'b') #绘制的两条折线图分别用红色和蓝色呈现
     plt.xlabel('The creation process for the tablet')
-    plt.ylabel('The difference between maximum load and minimum load')
-    plt.title('The poor difference of the tablet over each disk')
+    plt.ylabel('The range of the tablet distribution')
+    plt.title('The Range comparison for different disk selection strategies')
     plt.legend() #设置标签
 
     '''使用折线图呈现使用two random choices磁盘选择算法创建tablet的过程中tablet在各个磁盘上分布的标准差'''
@@ -88,8 +88,8 @@ if __name__ == '__main__':
     line_two_choices = plt.plot(range(num_tablet), std_two_choices, 'b', label='two random choices')
     plt.plot(range(num_tablet), std_choice, 'r', range(num_tablet), std_two_choices, 'b')
     plt.xlabel('The creation process for the tablet')
-    plt.ylabel('The difference between maximum load and minimum load')
-    plt.title('The standard deviation of the tablet over each disk')
+    plt.ylabel('The standard deviation of the tablet distribution')
+    plt.title('The standard deviation comparison for different disk selection strategies')
     plt.legend()
 
     plt.show() #图表显示
