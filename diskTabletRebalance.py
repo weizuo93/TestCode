@@ -147,7 +147,7 @@ if __name__ == '__main__':
     # migration_items = migration_execute(tablet_distribution)
 
     """
-    tablet_distribution_backend = httpRequest('tj1-hadoop-doris-staging-be01kscn', '18040')
+    tablet_distribution_backend = httpRequest('', '18040')
     for partition_id in tablet_distribution_backend:
         print('==============================================================================================================================================================================================')
         tablet_distribution = tablet_distribution_backend[partition_id]
