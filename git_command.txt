@@ -76,4 +76,19 @@ git push                  #将合并之后的本地master push到本用户的远
 git rebase upstream/master
 
 
-
+将github master分支的一次特定PR commit合并到gitlab官方仓库上
+git clone <gitlab官方仓库>                                    # 从gitlab官方仓库克隆工程
+git remote add <github官方远程主机> <github官方仓库>           # 将github官方仓库添加为本地仓库的远程仓库
+git checkout -b <本地新分支>                                  # 创建本地新分支
+git cherry-pick <github上的commit id>                         # 将github官方仓库的一次提交cherry-pick到本地新创建的分支
+如果代码不存在冲突，则针对github官方仓库的特定commit（由commit id标识）将被合并到本地分支；否则需要手动处理冲突，手动处理冲突时，执行
+git status                                                    # 查看冲突文件（标注“双方修改”的即为存在冲突的文件）
+vim <冲突文件>                                                # 依次打开存在冲突的文件进行冲突处理
+...
+git cherry-pick --continue                                    # 冲突处理完成之后继续进行cherry-pick操作
+  或
+git cherry-pick --abort                                       # 取消本次cherry-pick操作
+git log                                                       # 查看cherry-pick之后的提交
+git remote add <gitlab个人远程主机> <gitlab个人远程仓库>       # 将gitlab个人远程仓库添加为本地仓库的远程仓库
+git push <gitlab个人远程主机> <远程分支>                       # 将cherry-pick之后的本地分支push到gitlab个人远程仓库的指定分支
+<Pull Request>                                                # 向gitlab官方仓库提交PR，等待代码合并
