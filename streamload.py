@@ -81,5 +81,5 @@ if __name__ == "__main__":
     while True:
         write_data_file()
         time.sleep(8)
-        cmd = 'curl --location-trusted -u root: -H "label:' + str(int(time.time())) +'" -H "column_separator:|" -T ./data.txt http://tj-hadoop-tst-ct01.kscn:18030/api/test_db/table_test/_stream_load;'
+        cmd = 'curl --location-trusted -u root: -H "label:' + str(int(time.time())) +'" -H "column_separator:|" -T ./data.txt http://host:http_port/api/test_db/table_test/_stream_load;'
         os.system(cmd)
