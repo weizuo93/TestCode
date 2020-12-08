@@ -27,9 +27,11 @@ def parase_metrics(str):
 
 def parase_grafana_json_file(file_name, metrics):
     with open(file_name, "r") as file:
-        json_str = json.load(file)
+        dashboard = json.load(file)
         # print(json_str)
-        rows = json_str["panels"]
+        dashboard["title"] = "generate-dashboard-test"
+        dashboard["uid"] = "1dFdWd4dz"
+        rows = dashboard["panels"]
         # for row in rows:
         #     print(row["title"])
 
@@ -52,19 +54,33 @@ def parase_grafana_json_file(file_name, metrics):
                     panel = copy.deepcopy(rows[len(rows) - 1]["panels"][0])
                     mod = i % 3
                     div = i // 3
+                    panel["id"] = 100 + i
+                    panel["title"] = "[$cluster_name] " + str(key)
                     panel["gridPos"]["h"] = 6
                     panel["gridPos"]["w"] = 8
                     panel["gridPos"]["x"] = mod * 8
                     panel["gridPos"]["y"] = row["gridPos"]["y"] + div * 6 + 1
+
+                    panel_targets = []
+                    target = {}
+                    target["expr"] = str(key) + "{job=\"$cluster_name\"}"
+                    target["format"] = "time_series"
+                    target["intervalFactor"] = 1
+                    target["legendFormat"] = "{{instance}}"
+                    target["refId"] = "A"
+                    panel_targets.append(target)
+                    panel["targets"] = copy.deepcopy(panel_targets)
                     row["panels"].append(panel)
                     # print(row["panels"])
                 i = i + 1
 
-        row = json.dumps(row)
-        print(row)
+        # row = json.dumps(row)
+        # print(row)
         rows.append(row)
-
-
+        # print(json_str)
+        fp = open('./result.txt', 'w')
+        json.dump(dashboard, fp)
+        fp.close()
 
 if __name__ == '__main__':
     metrics = request_metrics("c3-hadoop-doris-tst-st01.bj", "8040")
