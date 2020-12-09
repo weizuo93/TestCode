@@ -15,7 +15,7 @@ def request_metrics(host, port):
 
 def parse_metrics(str):
     lines = str.split("\n")
-    metrics = []
+    metrics = dict()
     for line in lines:
         if line.startswith("#"):
             continue
@@ -26,15 +26,17 @@ def parse_metrics(str):
                 metric_item = dict()
                 metric_params = item[0].strip("}").split("{")   # 使用"{"分割metric与其后面{}中的参数列表，比如：doris_be_engine_requests_total{status="failed",type="publish"}
                 metric = metric_params[0]
-                metric_item["name"] = metric
+                if metric not in metrics.keys():
+                    metrics[metric] = []
                 if len(metric_params) == 2:
                     params = metric_params[1].strip().split(",")  # 使用“,”分割参数列表中的每一个参数
+                    params_item = dict()
                     for param in params:
                         kv = param.strip().split("=")             # 使用“=”分割参数列表中的每一个参数的key和value
                         k = kv[0]
                         v = kv[1].strip("\"")
-                        metric_item[k] = v
-                metrics.append(metric_item)
+                        params_item[k] = v
+                    metrics[metric].append(params_item)
     return metrics
 
 
@@ -103,34 +105,38 @@ def parse_grafana_json_file(file_name, metrics):
         row["panels"] = []
         i = 0
         for metric in metrics:
-            mod = i % 3
-            div = i // 3
+            for metric_param in metrics[metric]:
 
-            panel = copy.deepcopy(create_panel())
-            panel["id"] = 200 + i                          # 基于模板文件修改,注意不能与已有的panel id重复
-            panel["title"] = "[$cluster_name] " + str(metric["name"])
+                mod = i % 3
+                div = i // 3
 
-            panel["gridPos"]["h"] = 6
-            panel["gridPos"]["w"] = 8
-            panel["gridPos"]["x"] = mod * 8
-            panel["gridPos"]["y"] = row["gridPos"]["y"] + div * 6 + 1
+                panel = copy.deepcopy(create_panel())
+                panel["id"] = 200 + i                          # 基于模板文件修改,注意不能与已有的panel id重复
+                panel["title"] = "[$cluster_name] " + str(metric)
 
-            panel_targets = []
-            target = dict()
-            s = ""
-            for key in metric:
-                if key != "name" and key != "path":
-                    s = s + ", " + str(key) + "=\"" + str(metric[key]) + "\""
-            target["expr"] = str(metric["name"]) + "{job=\"$cluster_name\"" + s + "}"
-            target["format"] = "time_series"
-            target["intervalFactor"] = 1
-            # target["legendFormat"] = "{{instance}}"
-            target["refId"] = "A"
-            panel_targets.append(target)
-            panel["targets"] = copy.deepcopy(panel_targets)
+                panel["gridPos"]["h"] = 6
+                panel["gridPos"]["w"] = 8
+                panel["gridPos"]["x"] = mod * 8
+                panel["gridPos"]["y"] = row["gridPos"]["y"] + div * 6 + 1
 
-            row["panels"].append(panel)
-            i = i + 1
+                panel_targets = []
+                target = dict()
+                s = ""
+                if "path" not in metric_param.keys():
+                    for key in metric_param:
+                        s = s + ", " + str(key) + "=\"" + str(metric_param[key]) + "\""
+                target["expr"] = str(metric) + "{job=\"$cluster_name\"" + s + "}"
+                target["format"] = "time_series"
+                target["intervalFactor"] = 1
+                # target["legendFormat"] = "{{instance}}"
+                target["refId"] = "A"
+                panel_targets.append(target)
+                panel["targets"] = copy.deepcopy(panel_targets)
+
+                row["panels"].append(panel)
+                i = i + 1
+                if "path" in metric_param.keys():
+                    break
 
         # row = json.dumps(row)
         # print(row)
@@ -144,7 +150,7 @@ def parse_grafana_json_file(file_name, metrics):
 if __name__ == '__main__':
     metrics = request_metrics("c3-hadoop-doris-tst-st01.bj", "8040")
     metrics = parse_metrics(metrics)
-    print(metrics)
+    # print(metrics)
 
     parse_grafana_json_file("./grafana_json.txt", metrics)
 
