@@ -110,9 +110,14 @@ def parse_grafana_json_file(file_name, metrics):
                 mod = i % 3
                 div = i // 3
 
+                s = ""
+                if "path" not in metric_param.keys():
+                    for key in metric_param:
+                        s = s + ", " + str(key) + "=\"" + str(metric_param[key]) + "\""
+
                 panel = copy.deepcopy(create_panel())
                 panel["id"] = 200 + i                          # 基于模板文件修改,注意不能与已有的panel id重复
-                panel["title"] = "[$cluster_name] " + str(metric)
+                panel["title"] = "[$cluster_name] " + str(metric.replace("doris_be_", "")) + s
 
                 panel["gridPos"]["h"] = 6
                 panel["gridPos"]["w"] = 8
@@ -121,10 +126,7 @@ def parse_grafana_json_file(file_name, metrics):
 
                 panel_targets = []
                 target = dict()
-                s = ""
-                if "path" not in metric_param.keys():
-                    for key in metric_param:
-                        s = s + ", " + str(key) + "=\"" + str(metric_param[key]) + "\""
+
                 target["expr"] = str(metric) + "{job=\"$cluster_name\"" + s + "}"
                 target["format"] = "time_series"
                 target["intervalFactor"] = 1
@@ -150,7 +152,7 @@ def parse_grafana_json_file(file_name, metrics):
 if __name__ == '__main__':
     metrics = request_metrics("c3-hadoop-doris-tst-st01.bj", "8040")
     metrics = parse_metrics(metrics)
-    # print(metrics)
+    print(metrics)
 
     parse_grafana_json_file("./grafana_json.txt", metrics)
 
