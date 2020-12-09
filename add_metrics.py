@@ -1,7 +1,6 @@
 import requests
 import json
 import copy
-import time
 import uuid
 
 
@@ -106,12 +105,9 @@ def parse_grafana_json_file(file_name, metrics):
         for metric in metrics:
             mod = i % 3
             div = i // 3
-            # met = str(key)
-            # item = met.strip().split("{")
-            # print(key)
 
             panel = copy.deepcopy(create_panel())
-            panel["id"] = 200 + i                          # 基于模板文件修改
+            panel["id"] = 200 + i                          # 基于模板文件修改,注意不能与已有的panel id重复
             panel["title"] = "[$cluster_name] " + str(metric["name"])
 
             panel["gridPos"]["h"] = 6
@@ -134,7 +130,6 @@ def parse_grafana_json_file(file_name, metrics):
             panel["targets"] = copy.deepcopy(panel_targets)
 
             row["panels"].append(panel)
-            # print(row["panels"])
             i = i + 1
 
         # row = json.dumps(row)
@@ -149,7 +144,7 @@ def parse_grafana_json_file(file_name, metrics):
 if __name__ == '__main__':
     metrics = request_metrics("c3-hadoop-doris-tst-st01.bj", "8040")
     metrics = parse_metrics(metrics)
-    # print(metrics)
+    print(metrics)
 
     parse_grafana_json_file("./grafana_json.txt", metrics)
 
