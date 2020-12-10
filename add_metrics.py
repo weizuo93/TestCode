@@ -84,6 +84,23 @@ def create_panel():
     return panel
 
 
+def get_exist_metrics(rows):
+    exist_metrics = []
+    for row in rows:
+        # print(row["title"])
+        if "panels" not in row.keys():
+            targets = row["targets"]
+            for target in targets:
+                exist_metrics.append(target["expr"])
+        else:
+            panels = row["panels"]
+            for panel in panels:
+                targets = panel["targets"]
+                for target in targets:
+                    exist_metrics.append(target["expr"])
+    return exist_metrics
+
+
 def generate_grafana_json_file(file_name, metrics, metric_type):
     with open(file_name, "r") as file:
         dashboard = json.load(file)                     # 加载模板文件
@@ -91,6 +108,7 @@ def generate_grafana_json_file(file_name, metrics, metric_type):
         dashboard["title"] = "dashboard-test"
         dashboard["uid"] = str(uuid.uuid1())
         rows = dashboard["panels"]
+        exist_metrics = get_exist_metrics(rows)         # 统计已经在模板中存在的metrics
 
         row = dict()
         row["collapsed"] = True
@@ -107,6 +125,14 @@ def generate_grafana_json_file(file_name, metrics, metric_type):
         row["panels"] = []
         i = 0
         for metric in metrics:
+            exist = False
+            for exist_metric in exist_metrics:
+                if exist_metric.find(metric) != -1:
+                    exist = True
+                    break
+
+            if exist:
+                continue
             for metric_param in metrics[metric]:
 
                 mod = i % 3
@@ -129,12 +155,12 @@ def generate_grafana_json_file(file_name, metrics, metric_type):
                 panel_targets = []
                 target = dict()
                 if metric_type[metric] == "counter":
-                    target["expr"] = "irate(" + str(metric) + "{job=\"$cluster_name\"" + s + "}[$interval])"
+                    target["expr"] = "rate(" + str(metric) + "{job=\"$cluster_name\"" + s + "}[$interval])"
                 else:
                     target["expr"] = str(metric) + "{job=\"$cluster_name\"" + s + "}"
                 target["format"] = "time_series"
                 target["intervalFactor"] = 1
-                # target["legendFormat"] = "{{instance}}"
+                target["legendFormat"] = "{{instance}}"
                 target["refId"] = "A"
                 panel_targets.append(target)
                 panel["targets"] = copy.deepcopy(panel_targets)
@@ -156,8 +182,8 @@ def generate_grafana_json_file(file_name, metrics, metric_type):
 if __name__ == '__main__':
     metrics = request_metrics("c3-hadoop-doris-tst-st01.bj", "8040")
     [metrics, metric_type] = parse_metrics(metrics)
-    print(metrics)
-    print(metric_type)
+    # print(metrics)
+    # print(metric_type)
 
     generate_grafana_json_file("./grafana_json.txt", metrics, metric_type)
 
