@@ -16,9 +16,11 @@ def request_metrics(host, port):
 def parse_metrics(str):
     lines = str.split("\n")
     metrics = dict()
+    metric_type = dict()
     for line in lines:
         if line.startswith("#"):
-            continue
+            comment = line.strip().split(" ")
+            metric_type[comment[2]] = comment[3]
         else:
             item = line.strip().split()                        # 使用“ ”分割metric和值
             if len(item) == 2:
@@ -37,7 +39,7 @@ def parse_metrics(str):
                         v = kv[1].strip("\"")
                         params_item[k] = v
                     metrics[metric].append(params_item)
-    return metrics
+    return [metrics, metric_type]
 
 
 def create_panel():
@@ -82,7 +84,7 @@ def create_panel():
     return panel
 
 
-def parse_grafana_json_file(file_name, metrics):
+def generate_grafana_json_file(file_name, metrics, metric_type):
     with open(file_name, "r") as file:
         dashboard = json.load(file)                     # 加载模板文件
         # print(json_str)
@@ -126,8 +128,10 @@ def parse_grafana_json_file(file_name, metrics):
 
                 panel_targets = []
                 target = dict()
-
-                target["expr"] = str(metric) + "{job=\"$cluster_name\"" + s + "}"
+                if metric_type[metric] == "counter":
+                    target["expr"] = "irate(" + str(metric) + "{job=\"$cluster_name\"" + s + "}[$interval])"
+                else:
+                    target["expr"] = str(metric) + "{job=\"$cluster_name\"" + s + "}"
                 target["format"] = "time_series"
                 target["intervalFactor"] = 1
                 # target["legendFormat"] = "{{instance}}"
@@ -151,8 +155,9 @@ def parse_grafana_json_file(file_name, metrics):
 
 if __name__ == '__main__':
     metrics = request_metrics("c3-hadoop-doris-tst-st01.bj", "8040")
-    metrics = parse_metrics(metrics)
+    [metrics, metric_type] = parse_metrics(metrics)
     print(metrics)
+    print(metric_type)
 
-    parse_grafana_json_file("./grafana_json.txt", metrics)
+    generate_grafana_json_file("./grafana_json.txt", metrics, metric_type)
 
