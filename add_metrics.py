@@ -156,7 +156,7 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
 
             for metric_param in metrics[metric]:     # 依次遍历metric中的每一个参数列表
                 s = ""
-                if "path" not in metric_param.keys():  # 判断参数列表中是否包含“path”（表示磁盘）参数，集群中同一个metric下的所有磁盘信息在同一个panel中展示
+                if "path" not in metric_param.keys() and "device" not in metric_param.keys():  # 判断参数列表中是否包含“path”（表示磁盘）参数，集群中同一个metric下的所有磁盘信息在同一个panel中展示
                     for key in metric_param:
                         s = s + ", " + str(key) + "=\"" + str(metric_param[key]) + "\""
 
@@ -181,6 +181,8 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
                 target["intervalFactor"] = 1
                 if "path" in metric_param.keys():
                     target["legendFormat"] = "{{instance}}:{{path}}"
+                elif "device" in metric_param.keys():
+                    target["legendFormat"] = "{{instance}}:{{device}}"
                 else:
                     target["legendFormat"] = "{{instance}}"
                 target["refId"] = "A"
@@ -210,9 +212,9 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
 
                 if metrics_unit[metric] == "requests":
                     if metric_type[metric] == "counter":
-                        panel["yaxes"][0]["format"] = "ops"
+                        panel["yaxes"][0]["format"] = "rps"
                     else:
-                        panel["yaxes"][0]["format"] = "ops"
+                        panel["yaxes"][0]["format"] = "requests"
 
                 if metrics_unit[metric] == "operations":
                     if metric_type[metric] == "counter":
@@ -222,7 +224,7 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
 
                 row["panels"].append(panel)
                 i = i + 1
-                if "path" in metric_param.keys():
+                if "path" in metric_param.keys() or "device" in metric_param.keys():
                     break
 
         # row = json.dumps(row)
