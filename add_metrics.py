@@ -156,7 +156,7 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
 
             for metric_param in metrics[metric]:     # 依次遍历metric中的每一个参数列表
                 s = ""
-                if "path" not in metric_param.keys(): # 判断参数列表中是否包含“path”（表示磁盘）参数，集群中同一个metric下的所有磁盘信息在同一个panel中展示
+                if "path" not in metric_param.keys():  # 判断参数列表中是否包含“path”（表示磁盘）参数，集群中同一个metric下的所有磁盘信息在同一个panel中展示
                     for key in metric_param:
                         s = s + ", " + str(key) + "=\"" + str(metric_param[key]) + "\""
 
@@ -187,8 +187,38 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
                 panel_targets.append(target)
                 panel["targets"] = copy.deepcopy(panel_targets)
 
+                if metrics_unit[metric] == "nanoseconds":
+                    panel["yaxes"][0]["format"] = "ns"
+
+                if metrics_unit[metric] == "microseconds":
+                    panel["yaxes"][0]["format"] = "µs"
+
+                if metrics_unit[metric] == "milliseconds":
+                    panel["yaxes"][0]["format"] = "ms"
+
+                if metrics_unit[metric] == "seconds":
+                    panel["yaxes"][0]["format"] = "s"
+
                 if metrics_unit[metric] == "bytes":
-                    panel["yaxes"][0]["format"] = "bytes"
+                    if metric_type[metric] == "counter":
+                        panel["yaxes"][0]["format"] = "Bps"
+                    else:
+                        panel["yaxes"][0]["format"] = "bytes"
+
+                if metrics_unit[metric] == "percent":
+                    panel["yaxes"][0]["format"] = "percent"
+
+                if metrics_unit[metric] == "requests":
+                    if metric_type[metric] == "counter":
+                        panel["yaxes"][0]["format"] = "ops"
+                    else:
+                        panel["yaxes"][0]["format"] = "ops"
+
+                if metrics_unit[metric] == "operations":
+                    if metric_type[metric] == "counter":
+                        panel["yaxes"][0]["format"] = "ops"
+                    else:
+                        panel["yaxes"][0]["format"] = "ops"
 
                 row["panels"].append(panel)
                 i = i + 1
