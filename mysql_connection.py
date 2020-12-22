@@ -3,11 +3,11 @@ import pymysql
 try:
     # 打开数据库连接
     conn = pymysql.connect(
-             host='tj-hadoop-tst-ct01.kscn',
-             port=19030,
-             user='root',
-             # passwd='password',
-             db='test_db',
+             host='',
+             port=9030,
+             user='',
+             # passwd='',
+             db='',
              charset='utf8'
              )
 
