@@ -144,7 +144,7 @@ def query_tablet_migration_status(host, port, tablet_id, schema_hash):
 if __name__ == '__main__':
     be_host = ''
     webserver_port = ''
-    partitions_info = get_all_partitions_info(be_host, webserver_port)
+    # partitions_info = get_all_partitions_info(be_host, webserver_port)
     # for partition_id in partitions_info:
     #     print(str(partition_id))
     #     partition = partitions_info[partition_id]
@@ -175,22 +175,27 @@ if __name__ == '__main__':
                 print('---------------------------------------------------------------------------------------------------')
                 print(migration_items[i])
                 submit_tablet_migration_task(be_host, webserver_port, str(migration_items[i]["tablet_id"]), str(migration_items[i]["schema_hash"]), str(migration_items[i]["to_disk"]))  # 提交单个tablet的磁盘间迁移任务
-                # if not status:
-                #     print('There is something wrong when submit tablet migration task')
-                #     break
-                print('---------------------------------------------------------------------------------------------------')
-
-            print('query migration status:')
-            for i in range(len(migration_items)):
-                print('---------------------------------------------------------------------------------------------------')
-                print(migration_items[i])
+                j = 0
                 while True:
+                    time.sleep(1)  # sleep 1秒
+                    j = j + 1
+                    print("query migration task: " + str(j) + " times")
                     status = query_tablet_migration_status(be_host, webserver_port, str(migration_items[i]["tablet_id"]), str(migration_items[i]["schema_hash"]))  # 查询单个tablet的磁盘间迁移状态
                     if status:
                         break
-                    else:
-                        time.sleep(1)  # sleep 1秒
                 print('---------------------------------------------------------------------------------------------------')
+
+            # print('query migration status:')
+            # for i in range(len(migration_items)):
+            #     print('---------------------------------------------------------------------------------------------------')
+            #     print(migration_items[i])
+            #     while True:
+            #         status = query_tablet_migration_status(be_host, webserver_port, str(migration_items[i]["tablet_id"]), str(migration_items[i]["schema_hash"]))  # 查询单个tablet的磁盘间迁移状态
+            #         if status:
+            #             break
+            #         else:
+            #             time.sleep(1)  # sleep 1秒
+            #     print('---------------------------------------------------------------------------------------------------')
 
         tablet_distribution_backend = get_tablet_distribution(be_host, webserver_port, partition_id)
         for par_id in tablet_distribution_backend:

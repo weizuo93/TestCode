@@ -110,56 +110,56 @@ def query_tablet_migration_status(host, port, tablet_id, schema_hash):
 if __name__ == '__main__':
     be_host = ''
     webserver_port = ''
-    partitions_info = get_all_partitions_info(be_host, webserver_port)
+    # partitions_info = get_all_partitions_info(be_host, webserver_port)
     # for partition_id in partitions_info:
     #     print(str(partition_id))
     #     partition = partitions_info[partition_id]
     #     for disk in partition:
     #         print(str(disk) + " : " + str(partition[disk]))
 
-    partitions_info = get_all_partitions_info(be_host, webserver_port)
-    for partition_id in partitions_info:
+    # partitions_info = get_all_partitions_info(be_host, webserver_port)
+    # for partition_id in partitions_info:
         # 执行单个partition下的tablet在各个磁盘之间的re-balance
-        print('\n**********************************************************************************')
-        print('              Tablet Anti-balance For Partition: ' + str(partition_id))
-        print('**********************************************************************************\n')
-        tablet_distribution_backend = get_tablet_distribution(be_host, webserver_port, partition_id)  # 获取当前partition下的tablet在各个磁盘之间的分布
-        for par_id in tablet_distribution_backend:
-            tablet_distribution = tablet_distribution_backend[par_id]
-            print('re-balance 前，tablet分布情况：')
-            total_tablet = 0
-            for i in tablet_distribution:
-                total_tablet = total_tablet + len(tablet_distribution[i])
-            print('total number of tablet : {}'.format(total_tablet))
-            for i in tablet_distribution:
-                print('{}中tablet数量: {}'.format(i, len(tablet_distribution[i])))
-                # print('{} : {}'.format(i, tablet_distribution[i]))
+    partition_id = 11002
+    print('\n**********************************************************************************')
+    print('              Tablet Anti-balance For Partition: ' + str(partition_id))
+    print('**********************************************************************************\n')
+    tablet_distribution_backend = get_tablet_distribution(be_host, webserver_port, partition_id)  # 获取当前partition下的tablet在各个磁盘之间的分布
+    for par_id in tablet_distribution_backend:
+        tablet_distribution = tablet_distribution_backend[par_id]
+        print('re-balance 前，tablet分布情况：')
+        total_tablet = 0
+        for i in tablet_distribution:
+            total_tablet = total_tablet + len(tablet_distribution[i])
+        print('total number of tablet : {}'.format(total_tablet))
+        for i in tablet_distribution:
+            print('{}中tablet数量: {}'.format(i, len(tablet_distribution[i])))
+            # print('{} : {}'.format(i, tablet_distribution[i]))
 
-            migration_items = migration_plan(tablet_distribution)  # 迁移策略规划
-            print('migration tasks:')
-            for i in range(len(migration_items)):
-                print('---------------------------------------------------------------------------------------------------')
-                print(migration_items[i])
-                submit_tablet_migration_task(be_host, webserver_port, str(migration_items[i]["tablet_id"]), str(migration_items[i]["schema_hash"]), str(migration_items[i]["to_disk"]))  # 提交单个tablet的磁盘间迁移任务
-                while True:
-                    status = query_tablet_migration_status(be_host, webserver_port, str(migration_items[i]["tablet_id"]), str(migration_items[i]["schema_hash"]))  # 查询单个tablet的磁盘间迁移状态
-                    if status:
-                        break
-                    else:
-                        time.sleep(1)  # sleep 1秒
-                # if not status:
-                #     print('There is something wrong when submit tablet migration task')
-                #     break
-                print('---------------------------------------------------------------------------------------------------')
+        migration_items = migration_plan(tablet_distribution)  # 迁移策略规划
+        print('migration tasks:')
+        for i in range(len(migration_items)):
+            print('---------------------------------------------------------------------------------------------------')
+            print(migration_items[i])
+            submit_tablet_migration_task(be_host, webserver_port, str(migration_items[i]["tablet_id"]), str(migration_items[i]["schema_hash"]), str(migration_items[i]["to_disk"]))  # 提交单个tablet的磁盘间迁移任务
+            j = 0
+            while True:
+                time.sleep(1)  # sleep 1秒
+                j = j + 1
+                print("query migration task: " + str(j) + " times")
+                status = query_tablet_migration_status(be_host, webserver_port, str(migration_items[i]["tablet_id"]), str(migration_items[i]["schema_hash"]))  # 查询单个tablet的磁盘间迁移状态
+                if status:
+                    break
+            print('---------------------------------------------------------------------------------------------------')
 
-        tablet_distribution_backend = get_tablet_distribution(be_host, webserver_port, partition_id)
-        for par_id in tablet_distribution_backend:
-            tablet_distribution = tablet_distribution_backend[par_id]
-            print('re-balance后，tablet分布情况：')
-            total_tablet = 0
-            for i in tablet_distribution:
-                total_tablet = total_tablet + len(tablet_distribution[i])
-            print('total number of tablet : {}'.format(total_tablet))
-            for i in tablet_distribution:
-                print('{}中tablet数量: {}'.format(i, len(tablet_distribution[i])))
-                # print('{} : {}'.format(i, tablet_distribution[i]))
+    tablet_distribution_backend = get_tablet_distribution(be_host, webserver_port, partition_id)
+    for par_id in tablet_distribution_backend:
+        tablet_distribution = tablet_distribution_backend[par_id]
+        print('re-balance后，tablet分布情况：')
+        total_tablet = 0
+        for i in tablet_distribution:
+            total_tablet = total_tablet + len(tablet_distribution[i])
+        print('total number of tablet : {}'.format(total_tablet))
+        for i in tablet_distribution:
+            print('{}中tablet数量: {}'.format(i, len(tablet_distribution[i])))
+            # print('{} : {}'.format(i, tablet_distribution[i]))
