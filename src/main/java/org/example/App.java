@@ -17,7 +17,7 @@ public class App
     public static void main( String[] args )
     {
         JdbcService jdbcService = new JdbcService();
-        jdbcService.init("tj-hadoop-tst-ct01.kscn", 19030, "root", "root");
+        jdbcService.init("", , "", "");
         String sql = "select * from test_db.table_test_0";
         try {
             List<Map<String, String>> data = jdbcService.selectData(sql);
