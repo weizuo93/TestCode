@@ -29,9 +29,15 @@ public class RunnableDemo implements Runnable{
 //                    System.out.println("thread : " + this.threadName +"column= "+ column + ", value= " + line.get(column));
                 }
             }
-            
+            System.out.println("row number : " + data.size());
         } catch (SQLException e) {
             System.out.println("execute sql failed. " + e);
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
     }
 }
