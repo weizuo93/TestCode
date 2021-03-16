@@ -29,6 +29,7 @@ git push -u <远程主机名>                                                # �
 git push -u <远程主机名> <远程分支名>                                    # 远程创建一个远程分支，并将本地的新分支push上去（本地仓库并非关联远程仓库之后的首次push代码，其他本地分支已经push过了）
 git push --set-upstream <远程主机名> <远程分支名>                        # 设置远程分支，并将代码push上去 （本地仓库关联远程仓库之后首次push代码，）
 git push --force                                                       # 本地branch版本回退之后，让远程branch也进行版本回退
+git push <远程主机名> <本地分支名>:<远程分支名> --force                  # 强制将本地某个分支推送到远程指定的分支
 
 git checkout -b <本地分支名>                                            # 在本地创建一个分支，并切换到新创建的分支
 git checkout <本地分支名>                                               # 切换到另一个本地分支
@@ -36,6 +37,7 @@ git checkout <本地分支名>                                               # �
 git branch                                                              #列出所有本地分支（当前的本地分支会用*标识）
 git branch -a                                                           # 列出所有本地分支和远程分支（当前的本地分支会用*标识）
 git branch -vv                                                          # 查看本地分支与远程分支的关联关系（当前的本地分支会用*标识）
+git branch -m <分支原名称> <分支新名称>                                  # 修改本地分支名称
 git  branch --set-upstream-to= <远程主机名>/<远程分支名>  <本地分支名>   # 设置本地与远程分支的追踪关系
 git branch -d <分支名>                                                  # 删除本地分支
 git push origin --delete <远程分支名>                                   # 删除远程分支
