@@ -125,20 +125,35 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
     with open(file_name, "r") as file:
         dashboard = json.load(file)                     # 加载base模板文件
         # print(json_str)
-        dashboard["title"] = "dashboard-test"           # 设置dashboard的名称
+        dashboard["title"] = "Doris集群监控-test"           # 设置dashboard的名称
         dashboard["uid"] = str(uuid.uuid1())            # 为dashboard设置uid
         rows = dashboard["panels"]                      # 获取base模板dashboard中的所有row
         exist_metrics = get_exist_metrics_from_base(rows)  # 统计已经在base模板dashboard中存在的metrics
 
+        # 重置所有已经存在的row id和panel id
+        id_idx = 0
+        for row in rows:
+            row["id"] = id_idx
+            id_idx = id_idx + 1
+            if "panels" in row.keys():
+                panels = row["panels"]
+                for panel in panels:
+                    panel["id"] = id_idx
+                    id_idx = id_idx + 1
+
         row = dict()                 # 创建一个新的row
         row["collapsed"] = True
         row["datasource"] = None
-        row["id"] = 76                                  # 设置row的id，基于模板文件修改
+        row["id"] = id_idx
+        id_idx = id_idx + 1
         gridPos = dict()
         gridPos["h"] = 1
         gridPos["w"] = 24
         gridPos["x"] = 0
-        gridPos["y"] = 29                                # 设置row的坐标，基于模板文件修改
+        if len(rows) == 0:
+            gridPos["y"] = 0
+        else:
+            gridPos["y"] = rows[-1]["gridPos"]["y"] + 1
         row["gridPos"] = gridPos
         row["title"] = "BE Other Metrics"                # 设置row的名称
         row["type"] = "row"                              # 设置row的类型
@@ -161,9 +176,10 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
                         s = s + ", " + str(key) + "=\"" + str(metric_param[key]) + "\""
 
                 panel = copy.deepcopy(create_panel_template()) # 创建一个panel模板
-                panel["id"] = 200 + i                          # 为panel设置id，基于模板文件修改,注意不能与已有的panel id重复
+                panel["id"] = id_idx + i                          # 为panel设置id，基于模板文件修改,注意不能与已有的panel id重复
                 panel["title"] = "[$cluster_name] " + str(metric.replace("doris_be_", "")) + s  # 为panel设置名称
 
+                panel["datasource"] = "Prometheus-ZK"
                 mod = i % 3    # row中每行放置3个panel
                 div = i // 3
                 panel["gridPos"]["h"] = 6
@@ -174,9 +190,9 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
                 panel_targets = []
                 target = dict()
                 if metric_type[metric] == "counter":
-                    target["expr"] = "rate(" + str(metric) + "{job=\"$cluster_name\"" + s + "}[$interval])"  # 为panel设置具体的metric，counter类型的metric需要计算每秒的增长量
+                    target["expr"] = "rate(" + str(metric) + "{job_name=\"$cluster_name\"" + s + "}[$interval])"  # 为panel设置具体的metric，counter类型的metric需要计算每秒的增长量
                 else:
-                    target["expr"] = str(metric) + "{job=\"$cluster_name\"" + s + "}"                        # 为panel设置具体的metric，guage类型的metric直接使用metric值展示
+                    target["expr"] = str(metric) + "{job_name=\"$cluster_name\"" + s + "}"                        # 为panel设置具体的metric，guage类型的metric直接使用metric值展示
                 target["format"] = "time_series"                           # 在panel中以时间顺序呈现metric值
                 target["intervalFactor"] = 1
                 if "path" in metric_param.keys():
@@ -237,14 +253,16 @@ def append_grafana_panel_to_base(file_name, metrics, metric_type, metrics_unit):
 
 
 if __name__ == '__main__':
-    metrics = request_metrics("c3-hadoop-doris-tst-st01.bj", "8040")
-    [metrics, metric_type] = parse_metrics(metrics)
-    # print(metrics)
-    print(metric_type)
-    metrics_unit = request_metrics_unit("c3-hadoop-doris-tst-st01.bj", "8040")
-    print(metrics_unit)
-    # for key in metrics_unit:
-    #     print(metrics_unit[key])
+    be_host = "zjy-hadoop-doris-prc-be80.bj"
+    webserver_port = "8040"
+    base_config_file = "./origin.json"
 
-    append_grafana_panel_to_base("./grafana_json.txt", metrics, metric_type, metrics_unit)
+    metrics = request_metrics(be_host, webserver_port)
+    [metrics, metric_type] = parse_metrics(metrics)
+    # print(metric_type)
+    metrics_unit = request_metrics_unit(be_host, webserver_port)
+    # print(metrics_unit)
+
+    append_grafana_panel_to_base(base_config_file, metrics, metric_type, metrics_unit)
+
 
