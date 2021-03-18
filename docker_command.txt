@@ -9,7 +9,7 @@ docker pull [选项] [Docker Registry 地址[:端口号]/]仓库名[:标签]    
 注：Docker镜像仓库地址的格式一般是“<域名/IP>[:端口号]”，默认地址是Docker Hub(docker.io)。仓库名是两段式名称，即“<用户名>/<软件名>”，对于Docker Hub，如果不给出用户名，则默认为library，也就是官方镜像。
 
 docker run -it <镜像名称> /bin/bash                                                                       # 以镜像为基础启动并运行容器
-docker run -it -v <本机目录>:<容器目录> <镜像名称> /bin/bash                                               # 以镜像为基础启动并运行容器，同时将容器目录与本机目录建立关联
+docker run -it -v <本机目录>:<容器目录> --name=<容器名称> <镜像ID> /bin/bash                               # 以镜像为基础启动并运行容器，同时将容器目录与本机目录建立关联
 注：一般情况下，<容器目录>不要设为“/root”，否则，容器启动之后终端提示符会变成“bash-4.2$”，而不是期望的“[root@1a150ef6c859 ~]#”。因为终端提示符“[root@1a150ef6c859 ~]#”依赖于“/root”目录下的一些配置文件
    （.bash_profile、.bashrc），如果将容器中的“/root”目录关联本机中的某个空白目录，会导致“/root”目录也是空白目录，所以会出现终端提示符为变成“bash-4.2$”的情况。
 docker run -it --cap-add SYS_PTRACE --privileged=true -v <本机目录>:<容器目录> <镜像名称> /bin/bash        # 以镜像为基础启动并运行容器，同时将容器目录与本机目录建立关联
