@@ -2,10 +2,11 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-def analysis():
+
+def analysis(path, prefix):
     time = []
     mem_malloc = []
-    path = "./data"          # 数据文件目录
+    # path = "path"           # 数据文件目录
     files = os.listdir(path)  # 得到目录下的所有文件名称
     files.sort()              # 按文件名进行排序
     for file in files:        # 遍历文件
@@ -23,7 +24,7 @@ def analysis():
                 if len(li) == 3:
                     print("mem: " + li[1] + " " + li[2] + ", file: " + file)
                     mem_malloc.append(float(li[1]))
-                    time.append(file.split("mem.")[1])
+                    time.append(file.split(prefix)[1])
                 else:
                     print("Error." + line)
             f.close()
@@ -42,4 +43,4 @@ def analysis():
 
 
 if __name__ == '__main__':
-    analysis()
+    analysis("data_sgp2_be20", "sgp2_be20.mem.")
