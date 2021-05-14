@@ -1,0 +1,21 @@
+
+						*****************************************************************************	
+						*									    *									
+						*			             Coredump                               *
+						*									    *
+						*****************************************************************************
+
+1、查看coredump是否打开
+   ulimit -c 
+   如果结果为unlimited，则coredump已经打开，并且core文件没有大小限制；如果结果为0，则coredump已经关闭。
+
+2、打开coredump
+   ulimit -c unlimited
+
+3、查看设置是否生效
+   ulimit -a
+
+4、设置coredump文件路径和文件名格式
+   echo "/root/doris/test/cores/core-%e-%p-%t" > /proc/sys/kernel/core_pattern
+   生成的core文件会保存在/root/doris/test/cores/路径下。
+    
