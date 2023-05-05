@@ -83,6 +83,9 @@ public:
     }
 
 private:
+
+    void _thread_worker();
+
     int _min_thread_num;
     int _max_thread_num;
     bool _shut_down;
@@ -92,12 +95,4 @@ private:
     std::mutex _mutex;
     std::condition_variable _cv_task;
     std::condition_variable _cv_shut_down;
-
-    class ThreadWorker {
-    public:
-        ThreadWorker(ThreadPool* pool) : _thread_pool(pool) {};
-        void operator()();
-    private:
-        ThreadPool* _thread_pool;
-    };
 };
