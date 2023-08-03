@@ -29,6 +29,7 @@ import java.util.Map;
  */
 public abstract class Plugin implements Closeable {
 
+    protected String name;
     /**
      * invoke when the plugin install.
      * the plugin should only be initialized once.
@@ -42,5 +43,9 @@ public abstract class Plugin implements Closeable {
      */
     @Override
     public void close() throws IOException {
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

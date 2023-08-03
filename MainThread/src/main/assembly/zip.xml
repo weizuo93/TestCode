@@ -31,15 +31,17 @@ under the License.
             </includes>
             <outputDirectory>/</outputDirectory>
         </fileSet>
-        <!--
+
         <fileSet>
             <directory>src/main/assembly</directory>
             <includes>
-                <include>plugin.properties</include>
+                <include>config.properties</include>
+                <!--
                 <include>plugin.conf</include>
+                -->
             </includes>
             <outputDirectory>/</outputDirectory>
         </fileSet>
-        -->
+
     </fileSets>
 </assembly>

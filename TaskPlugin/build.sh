@@ -32,4 +32,7 @@ rm -rf ${PROJECT_OUTPUT}
 mkdir ${PROJECT_OUTPUT}
 cp ${PROJECT_HOME}/target/task-plugin.zip ${PROJECT_HOME}/output/
 
+cd ${PROJECT_HOME}/output/
+unzip task-plugin.zip
+
 echo "Build JavaPluginMain Finished"

@@ -1,36 +1,79 @@
 package org.example;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class PluginLoader {
+    private static final Logger LOG = LogManager.getLogger(PluginLoader.class);
     private Path installPath;
     private Plugin plugin;
     private PluginInfo pluginInfo;
+    private Path pluginDir;
 
     public PluginLoader(Path installPath, PluginInfo pluginInfo) {
         this.installPath = installPath;
         this.pluginInfo = pluginInfo;
+        this.pluginDir = Path.of(ConfigLoader.getConfigLoader().getConfig("plugin_dir"));
     }
 
     public void install() throws Exception {
-        plugin = dynamicLoadPlugin();
-        try {
-            plugin.init();
-        } catch (Error e) {
-            throw new Exception(e.getMessage());
+        if (hasInstalled()) {
+            throw new Exception("Plugin " + pluginInfo.getName() + " has already been installed.");
         }
+
+        movePlugin();
+        plugin = dynamicLoadPlugin();
+        plugin.setName(pluginInfo.getName());
+        plugin.init();
+    }
+
+    public void movePlugin() throws Exception {
+        if (installPath == null || !Files.exists(installPath)) {
+            throw new PluginException("Install plugin " + pluginInfo.getName() + " failed, because install path doesn't "
+                    + "exist.");
+        }
+
+        Path targetPath = FileSystems.getDefault().getPath(pluginDir.toString(), pluginInfo.getName());
+        if (Files.exists(targetPath)) {
+            if (!Files.isSameFile(installPath, targetPath)) {
+                throw new PluginException(
+                        "Install plugin " + pluginInfo.getName() + " failed. because " + installPath.toString()
+                                + " exists");
+            }
+        } else {
+            Files.move(installPath, targetPath, StandardCopyOption.ATOMIC_MOVE);
+//            Files.copy(installPath, targetPath);
+        }
+
+        // move success
+        installPath = targetPath;
     }
 
     private Plugin dynamicLoadPlugin() throws Exception {
+        if (plugin != null) {
+            try {
+                plugin.close();
+            } catch (Exception e) {
+                LOG.warn("failed to close previous plugin, ignore it. ", e);
+            } finally {
+                plugin = null;
+            }
+        }
+
         Set<URL> jarList = getJarUrl(installPath);
 
         // create a child to load the plugin in this bundle
@@ -83,5 +126,27 @@ public class PluginLoader {
         }
 
         return urls;
+    }
+
+    private boolean hasInstalled() {
+        // check already install
+        if (pluginInfo != null) {
+            Path targetPath = FileSystems.getDefault().getPath(pluginDir.toString(), pluginInfo.getName());
+            if (Files.exists(targetPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void uninstall() throws IOException {
+        if (plugin != null) {
+            plugin.close();
+        }
+
+        if (null != installPath && Files.exists(installPath)
+                && Files.isSameFile(installPath.getParent(), pluginDir)) {
+            FileUtils.deleteQuietly(installPath.toFile());
+        }
     }
 }

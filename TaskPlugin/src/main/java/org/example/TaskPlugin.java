@@ -1,11 +1,14 @@
 package org.example;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class TaskPlugin extends Plugin
-{
+public class TaskPlugin extends Plugin {
+    private static final Logger LOG = LogManager.getLogger(TaskPlugin.class);
     private static SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private volatile boolean isInit = false;
     private volatile boolean isClosed = false;
@@ -19,8 +22,8 @@ public class TaskPlugin extends Plugin
                 if (isInit) {
                     return;
                 }
-                System.out.println("task plugin is installed successfully.");
-                this.thread = new Thread(new TaskPluginWorker(), "task plugin thread");
+                LOG.info("task plugin [{}] is installed successfully.", this.name);
+                this.thread = new Thread(new TaskPluginWorker(this.name), "task plugin thread");
                 this.thread.start();
 
                 isInit = true;
@@ -39,19 +42,20 @@ public class TaskPlugin extends Plugin
             try {
                 thread.join();
             } catch (InterruptedException e) {
-                System.out.println("encounter exception when closing task plugin" + e);
+                LOG.warn("encounter exception when closing task plugin", e);
             }
         }
     }
 
     private class TaskPluginWorker implements Runnable {
-
-        public TaskPluginWorker() {
+        private String pluginName;
+        public TaskPluginWorker(String name) {
+            this.pluginName = name;
         }
 
         public void run() {
             while (!isClosed) {
-                System.out.println(longToTimeString(System.currentTimeMillis()) + " Task Plugin is running ...");
+                LOG.info(longToTimeString(System.currentTimeMillis()) + " Task Plugin [{}] is running ...", this.pluginName);
                 try {
                     Thread.sleep(5000);
                 } catch (Exception e) {}

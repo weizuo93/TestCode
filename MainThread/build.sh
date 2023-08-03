@@ -32,4 +32,8 @@ rm -rf ${PROJECT_OUTPUT}
 mkdir ${PROJECT_OUTPUT}
 cp ${PROJECT_HOME}/target/simple-plugin-main-thread.zip ${PROJECT_HOME}/output/
 
+cd ${PROJECT_HOME}/output/
+unzip simple-plugin-main-thread.zip
+mkdir plugins
+
 echo "Build JavaPluginMain Finished"
